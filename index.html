@@ -274,11 +274,13 @@
     <label for="allSizes">Set all intended shirt sizes</label>
     <div class="bulkSizeRow">
       <select id="allSizes">
-        <option value="SM">SM</option>
-        <option value="MED" selected>MED</option>
-        <option value="LG">LG</option>
+        <option value="XS">XS</option>
+        <option value="S">S</option>
+        <option value="M" selected>M</option>
+        <option value="L">L</option>
         <option value="XL">XL</option>
-        <option value="XXXL">XXXL</option>
+        <option value="2XL">2XL</option>
+        <option value="3XL">3XL</option>
       </select>
       <button class="secondary" type="button" onclick="applySizeToAll()">Apply to All</button>
     </div>
@@ -334,7 +336,7 @@ function addItem(num){
     cart.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2),
       num,
-      size:"MED"
+      size:"M"
     });
   }
 
@@ -417,7 +419,7 @@ function grouped(){
     if(!map.has(k)) map.set(k,{num:r.num,filename:r.filename,src:r.src,size:r.size,qty:0});
     map.get(k).qty++;
   });
-  return [...map.values()].sort((a,b)=>a.num-b.num || ["SM","MED","LG","XL","XXXL"].indexOf(a.size)-["SM","MED","LG","XL","XXXL"].indexOf(b.size));
+  return [...map.values()].sort((a,b)=>a.num-b.num || ["XS","S","M","L","XL","2XL","3XL"].indexOf(a.size)-["XS","S","M","L","XL","2XL","3XL"].indexOf(b.size));
 }
 function renderCart(){
   const rows=getRows(), box=$("cartList");
@@ -431,7 +433,7 @@ function renderCart(){
         <div style="margin-top:7px">
           <label style="font-size:12px;font-weight:700">Shirt size this print is for:</label><br>
           <select onchange="setLineSize('${r.id}',this.value)" style="margin-top:4px;padding:7px 9px">
-            ${["SM","MED","LG","XL","XXXL"].map(s=>`<option value="${s}" ${r.size===s?"selected":""}>${s}</option>`).join("")}
+            ${["XS","S","M","L","XL","2XL","3XL"].map(s=>`<option value="${s}" ${r.size===s?"selected":""}>${s}</option>`).join("")}
           </select>
         </div>
       </div>
