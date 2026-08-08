@@ -163,6 +163,31 @@
   .shade.open{display:block}
   .drawerHead{padding:18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
   .drawerHead h2{margin:0;font-size:20px;flex:1}
+  .bulkSize{
+    margin:14px 18px 0;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    background:#f7f9fc;
+  }
+  .bulkSize label{
+    display:block;
+    font-size:12px;
+    font-weight:800;
+    margin-bottom:6px;
+    color:var(--blue2);
+  }
+  .bulkSizeRow{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:8px;
+    align-items:center;
+  }
+  .bulkSize select{
+    width:100%;
+    min-width:0;
+  }
+
   .cartList{padding:14px 18px;overflow:auto;flex:1}
   .empty{color:var(--muted);padding:30px 0;text-align:center}
   .cartItem{display:grid;grid-template-columns:64px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -236,6 +261,18 @@
     <h2>Your Order</h2>
     <button class="secondary" onclick="closeCart()">Close</button>
   </div>
+  <div class="bulkSize">
+    <label for="allSizes">Set all intended shirt sizes</label>
+    <div class="bulkSizeRow">
+      <select id="allSizes">
+        <option value="S">Small</option>
+        <option value="M" selected>Medium</option>
+        <option value="L">Large</option>
+        <option value="XL">XL</option>
+      </select>
+      <button class="secondary" type="button" onclick="applySizeToAll()">Apply to All</button>
+    </div>
+  </div>
   <div class="cartList" id="cartList"></div>
   <div class="drawerFoot">
     <div class="summary" id="cartSummary"></div>
@@ -299,6 +336,13 @@ function removeLine(id){
   cart = cart.filter(x=>x.id!==id);
   save();
 }
+function applySizeToAll(){
+  if(!cart.length) return;
+  const size = $("allSizes").value;
+  cart.forEach(item=>item.size=size);
+  save();
+}
+
 function setLineSize(id,size){
   const item = cart.find(x=>x.id===id);
   if(item){ item.size=size; save(); }
@@ -385,7 +429,7 @@ function renderCart(){
         <button class="danger" onclick="removeLine('${r.id}')">Remove</button>
       </div>
     </div>`).join("");
-  $("cartSummary").textContent = `${cartTotal()} total print${cartTotal()===1?"":"s"} • each print defaults to Medium; change the intended shirt size here if needed`;
+  $("cartSummary").textContent = `${cartTotal()} total print${cartTotal()===1?"":"s"} • use “Set all” above, then change any individual print below if needed`;
 }
 
 function openCart(){renderCart();$("drawer").classList.add("open");$("shade").classList.add("open");}
