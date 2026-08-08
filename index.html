@@ -214,11 +214,16 @@ $("customerName").addEventListener("input",()=>localStorage.setItem("columbiaPri
 
 function stepQty(num,delta){
   const el = $(`qty-${num}`);
-  const current = Math.max(1, parseInt(el.textContent || "1",10));
-  el.textContent = Math.max(1, current + delta);
+  const current = Math.max(0, parseInt(el.textContent || "0",10));
+  el.textContent = Math.max(0, current + delta);
 }
+
+
 function addItem(num){
-  const qty = Math.max(1, parseInt($(`qty-${num}`).textContent || "1",10));
+  const qtyEl = $(`qty-${num}`);
+  const qty = Math.max(0, parseInt(qtyEl.textContent || "0",10));
+  if(qty === 0) return;
+
   for(let i=0;i<qty;i++){
     cart.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2),
@@ -226,9 +231,11 @@ function addItem(num){
       size:"M"
     });
   }
-  $(`qty-${num}`).textContent = "1";
+
+  qtyEl.textContent = "0";
   save();
 }
+
 function removeLine(id){
   cart = cart.filter(x=>x.id!==id);
   save();
@@ -272,7 +279,7 @@ function renderCards(){
           <div class="qtyLabel">Quantity</div>
           <div class="qtyStepper">
             <button type="button" onclick="stepQty(${d.num},-1)" aria-label="Decrease quantity">−</button>
-            <span class="qtyValue" id="qty-${d.num}" aria-label="Quantity">1</span>
+            <span class="qtyValue" id="qty-${d.num}" aria-label="Quantity">0</span>
             <button type="button" onclick="stepQty(${d.num},1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
