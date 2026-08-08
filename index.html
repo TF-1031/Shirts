@@ -77,6 +77,15 @@
   .primary:hover{background:var(--blue2)}
   .secondary{background:#eef3f9;color:var(--blue2)}
   .danger{background:#fff0f0;color:#9b2424}
+
+  .smsButton{
+    background:#198754 !important;
+    color:#fff !important;
+  }
+  .smsButton:hover{
+    background:#146c43 !important;
+  }
+
   .cartBtn{margin-left:auto;white-space:nowrap}
   .badge{display:inline-flex;min-width:22px;height:22px;border-radius:999px;background:#fff;color:var(--blue);align-items:center;justify-content:center;margin-left:6px;padding:0 6px}
   .controls{max-width:1420px;margin:16px auto 0;padding:0 20px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
@@ -265,10 +274,11 @@
     <label for="allSizes">Set all intended shirt sizes</label>
     <div class="bulkSizeRow">
       <select id="allSizes">
-        <option value="S">Small</option>
-        <option value="M" selected>Medium</option>
-        <option value="L">Large</option>
+        <option value="SM">SM</option>
+        <option value="MED" selected>MED</option>
+        <option value="LG">LG</option>
         <option value="XL">XL</option>
+        <option value="XXXL">XXXL</option>
       </select>
       <button class="secondary" type="button" onclick="applySizeToAll()">Apply to All</button>
     </div>
@@ -281,7 +291,7 @@
       <button class="secondary" onclick="printOrder()">Print / Save PDF</button>
       <button class="primary wide" onclick="downloadPDF()">Download Order PDF</button>
       <button class="primary" onclick="emailOrder()">Email Order</button>
-      <button class="primary" onclick="textOrder()">Text Order</button>
+      <button class="primary smsButton" onclick="textOrder()">Text Order</button>
     </div>
     <div class="tiny">
       These are <strong>prints only</strong>; shirts are chosen separately. Email goes to <strong>toddefarrell@gmail.com</strong> with subject <strong>Columbia Prints</strong>. Text Order opens a message to <strong>(573) 205-9476</strong> with the full order prefilled.
@@ -324,7 +334,7 @@ function addItem(num){
     cart.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2),
       num,
-      size:"M"
+      size:"MED"
     });
   }
 
@@ -407,7 +417,7 @@ function grouped(){
     if(!map.has(k)) map.set(k,{num:r.num,filename:r.filename,src:r.src,size:r.size,qty:0});
     map.get(k).qty++;
   });
-  return [...map.values()].sort((a,b)=>a.num-b.num || ["S","M","L","XL"].indexOf(a.size)-["S","M","L","XL"].indexOf(b.size));
+  return [...map.values()].sort((a,b)=>a.num-b.num || ["SM","MED","LG","XL","XXXL"].indexOf(a.size)-["SM","MED","LG","XL","XXXL"].indexOf(b.size));
 }
 function renderCart(){
   const rows=getRows(), box=$("cartList");
@@ -421,7 +431,7 @@ function renderCart(){
         <div style="margin-top:7px">
           <label style="font-size:12px;font-weight:700">Shirt size this print is for:</label><br>
           <select onchange="setLineSize('${r.id}',this.value)" style="margin-top:4px;padding:7px 9px">
-            ${["S","M","L","XL"].map(s=>`<option value="${s}" ${r.size===s?"selected":""}>${s==="S"?"Small":s==="M"?"Medium":s==="L"?"Large":"XL"}</option>`).join("")}
+            ${["SM","MED","LG","XL","XXXL"].map(s=>`<option value="${s}" ${r.size===s?"selected":""}>${s}</option>`).join("")}
           </select>
         </div>
       </div>
@@ -437,23 +447,16 @@ function closeCart(){$("drawer").classList.remove("open");$("shade").classList.r
 
 
 function cleanOrderName(filename){
-  // Remove the file extension.
-  const lastDot = filename.lastIndexOf(".");
-  const ext = lastDot >= 0 ? filename.slice(lastDot + 1).toLowerCase() : "";
-  let base = lastDot >= 0 ? filename.slice(0, lastDot) : filename;
-
-  // If the filename includes its own file-type marker before the number
-  // (for example "svg-03.svg", "png-03.png", or "jpg-03.jpg"),
-  // remove that redundant marker and turn the number into "#03".
-  if(ext){
-    const typeMarker = new RegExp("\\\\s+" + ext.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&") + "-(\\\\d+)$", "i");
-    base = base.replace(typeMarker, " #$1");
+  // Remove extension and return only the design number as #NN when present.
+  const noExt = filename.replace(/\.[^.]+$/, "");
+  const match = noExt.match(/(\d+)\s*$/);
+  if(match){
+    return `#${String(parseInt(match[1],10)).padStart(2,"0")}`;
   }
-
-  // Fallback for the current Columbia naming convention.
-  base = base.replace(/\s+(?:svg|png|jpe?g|webp)-(\d+)$/i, " #$1");
-
-  return base.trim();
+  return noExt
+    .replace(/Columbia\s+University/ig,"")
+    .replace(/\b(?:svg|png|jpe?g|webp)\b[-\s_]*/ig,"")
+    .trim();
 }
 
 function orderDate(){
@@ -471,8 +474,7 @@ function orderText(){
   ];
 
   grouped().forEach(g=>{
-    const designName = cleanOrderName(g.filename);
-    lines.push(`${designName}-${g.size.toLowerCase()}-${g.qty}`);
+    lines.push(`(${g.qty})${cleanOrderName(g.filename)}-${g.size.toUpperCase()}`);
   });
 
   return lines.join("\n");
@@ -506,7 +508,7 @@ function printOrder(){
   const body=rows.map(r=>`
     <tr>
       <td style="width:70px"><img src="${r.src}" style="width:62px;height:62px;object-fit:contain"></td>
-      <td><strong>${escapeHtml(cleanOrderName(r.filename))}-${r.size.toLowerCase()}-${r.qty}</strong></td>
+      <td><strong>(${r.qty})${escapeHtml(cleanOrderName(r.filename))}-${r.size.toUpperCase()}</strong></td>
     </tr>`).join("");
   w.document.write(`<!doctype html><html><head><title>Columbia University Order - ${escapeHtml(name)}</title>
   <style>body{font-family:Arial,sans-serif;margin:32px;color:#111}h1{margin-bottom:4px}p{margin:3px 0}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border-bottom:1px solid #ddd;padding:8px;text-align:left}th{background:#f1f3f5}@media print{button{display:none}}</style></head>
@@ -564,7 +566,7 @@ async function downloadPDF(){
     }catch(e){}
     pdf.setFont("helvetica","bold");
     pdf.setFontSize(11);
-    pdf.text(`${cleanOrderName(r.filename)}-${r.size.toLowerCase()}-${r.qty}`,112,y+24);
+    pdf.text(`(${r.qty})${cleanOrderName(r.filename)}-${r.size.toUpperCase()}`,112,y+24);
     y+=66;
     pdf.line(42,y-5,570,y-5);
   }
