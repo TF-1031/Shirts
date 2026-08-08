@@ -67,6 +67,9 @@
   .filename{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.3;word-break:break-word;min-height:32px}
   .addrow{padding:0 14px 14px;display:grid;grid-template-columns:1fr 64px;gap:8px}
   .chosenSize{display:flex;align-items:center;padding:10px 11px;border:1px solid #cfd6df;border-radius:10px;background:#fff;font-weight:800;color:var(--blue2)}
+  .qtyStepper{display:grid;grid-template-columns:38px 1fr 38px;align-items:center;border:1px solid #cfd6df;border-radius:10px;overflow:hidden;background:#fff}
+  .qtyStepper button{grid-column:auto!important;border-radius:0;padding:9px 0;background:#eef3f9;color:var(--blue2);font-size:18px;line-height:1}
+  .qtyStepper input{width:100%;border:0;border-left:1px solid #dfe4ea;border-right:1px solid #dfe4ea;border-radius:0;text-align:center;padding:9px 2px;background:#fff}
   .addrow button{grid-column:1/3}
   .inCart{padding:0 14px 13px;font-size:12px;color:var(--good);font-weight:700;min-height:28px}
   .drawer{position:fixed;right:0;top:0;bottom:0;width:min(520px,100vw);background:white;z-index:30;box-shadow:-10px 0 40px rgba(0,0,0,.18);transform:translateX(102%);transition:.24s ease;display:flex;flex-direction:column}
@@ -167,6 +170,11 @@ function save(){
 $("customerName").value = localStorage.getItem("columbiaPrintName") || "";
 $("customerName").addEventListener("input",()=>localStorage.setItem("columbiaPrintName",$("customerName").value));
 
+function stepQty(num,delta){
+  const el = $(`qty-${num}`);
+  const current = Math.max(1, parseInt(el.value || "1",10));
+  el.value = Math.max(1, current + delta);
+}
 function addItem(num){
   const qty = Math.max(1, parseInt($(`qty-${num}`).value || "1",10));
   for(let i=0;i<qty;i++){
@@ -218,9 +226,13 @@ function renderCards(){
         <div class="filename">${escapeHtml(d.filename)}</div>
       </div>
       <div class="addrow">
-        <div class="chosenSize">Print quantity</div>
-        <input id="qty-${d.num}" type="number" min="1" value="1" aria-label="Print quantity">
-        <button class="primary" onclick="addItem(${d.num})">Add Print${qtyForDesign(d.num) ? "s" : ""} to Order</button>
+        <div class="chosenSize">Quantity</div>
+        <div class="qtyStepper">
+          <button type="button" onclick="stepQty(${d.num},-1)" aria-label="Decrease quantity">−</button>
+          <input id="qty-${d.num}" type="number" min="1" value="1" inputmode="numeric" aria-label="Quantity">
+          <button type="button" onclick="stepQty(${d.num},1)" aria-label="Increase quantity">+</button>
+        </div>
+        <button class="primary" onclick="addItem(${d.num})">Add to Order</button>
       </div>
       <div class="inCart">${inc ? `${inc} print${inc===1?"":"s"} currently in order` : ""}</div>
     </article>`;
