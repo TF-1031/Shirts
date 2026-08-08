@@ -168,6 +168,30 @@
   .inCart{padding:0 14px 13px;font-size:12px;color:var(--good);font-weight:700;min-height:28px}
   .drawer{position:fixed;right:0;top:0;bottom:0;width:min(520px,100vw);background:white;z-index:30;box-shadow:-10px 0 40px rgba(0,0,0,.18);transform:translateX(102%);transition:.24s ease;display:flex;flex-direction:column}
   .drawer.open{transform:translateX(0)}
+
+  .nameModalShade{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.38);
+    z-index:60;
+    align-items:center;
+    justify-content:center;
+    padding:18px;
+  }
+  .nameModalShade.open{display:flex}
+  .nameModal{
+    width:min(420px,100%);
+    background:#fff;
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 18px 50px rgba(0,0,0,.24);
+  }
+  .nameModal h3{margin:0 0 6px;font-size:20px}
+  .nameModal p{margin:0 0 12px;color:var(--muted);font-size:14px}
+  .nameModal input{width:100%;margin-bottom:10px}
+  .nameModalActions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
   .shade{display:none;position:fixed;inset:0;background:rgba(0,0,0,.28);z-index:25}
   .shade.open{display:block}
   .drawerHead{padding:18px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
@@ -301,6 +325,19 @@
     </div>
   </div>
 </aside>
+
+
+<div class="nameModalShade" id="nameModalShade" role="dialog" aria-modal="true" aria-labelledby="nameModalTitle">
+  <div class="nameModal">
+    <h3 id="nameModalTitle">Add your name</h3>
+    <p>Your name is required before submitting the order.</p>
+    <input id="nameModalInput" type="text" placeholder="First and last name" autocomplete="name">
+    <div class="nameModalActions">
+      <button class="secondary" type="button" onclick="closeNameModal()">Cancel</button>
+      <button class="primary" type="button" onclick="saveNameFromModal()">Continue</button>
+    </div>
+  </div>
+</div>
 
 <script src="config.js"></script>
 <script>
@@ -487,22 +524,65 @@ function orderText(){
   return lines.join("\n");
 }
 
-function requireCustomerName(){
-  const input = $("customerName");
-  const name = input.value.trim();
+let pendingNameAction = null;
 
-  if(name) return name;
+function openNameModal(action){
+  pendingNameAction = action || null;
+  const shade = $("nameModalShade");
+  const modalInput = $("nameModalInput");
+  modalInput.value = $("customerName").value.trim();
+  shade.classList.add("open");
+  setTimeout(()=>modalInput.focus(),50);
+}
 
-  alert("Please enter your name before submitting the order.");
-  input.focus();
-  input.scrollIntoView({behavior:"smooth", block:"center"});
-  return null;
+function closeNameModal(){
+  $("nameModalShade").classList.remove("open");
+  pendingNameAction = null;
+}
+
+function saveNameFromModal(){
+  const modalInput = $("nameModalInput");
+  const name = modalInput.value.trim();
+
+  if(!name){
+    modalInput.focus();
+    return;
+  }
+
+  $("customerName").value = name;
+  localStorage.setItem("columbiaPrintName", name);
+  $("nameModalShade").classList.remove("open");
+
+  const action = pendingNameAction;
+  pendingNameAction = null;
+
+  if(typeof action === "function"){
+    action();
+  }
+}
+
+$("nameModalInput").addEventListener("keydown",(e)=>{
+  if(e.key === "Enter"){
+    e.preventDefault();
+    saveNameFromModal();
+  }
+});
+
+function requireCustomerName(action){
+  const name = $("customerName").value.trim();
+
+  if(name){
+    return true;
+  }
+
+  openNameModal(action);
+  return false;
 }
 
 function emailOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=requireCustomerName();
-  if(!name) return;
+  if(!requireCustomerName(emailOrder)) return;
+
   const body = encodeURIComponent(orderText());
   const subject = encodeURIComponent("Columbia Prints");
   location.href = `mailto:toddefarrell@gmail.com?subject=${subject}&body=${body}`;
@@ -510,8 +590,7 @@ function emailOrder(){
 
 function textOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=requireCustomerName();
-  if(!name) return;
+  if(!requireCustomerName(textOrder)) return;
 
   const body = encodeURIComponent(orderText());
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -521,8 +600,8 @@ function textOrder(){
 
 function printOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=requireCustomerName();
-  if(!name) return;
+  if(!requireCustomerName(printOrder)) return;
+  const name=$("customerName").value.trim();
   const rows=grouped();
   const w=window.open("","_blank");
   const body=rows.map(r=>`
@@ -558,8 +637,8 @@ async function svgToPng(src, size=240){
 
 async function downloadPDF(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=requireCustomerName();
-  if(!name) return;
+  if(!requireCustomerName(downloadPDF)) return;
+  const name=$("customerName").value.trim();
   if(!window.jspdf){alert("PDF library could not load. Use “Print / Save PDF” instead.");return;}
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({unit:"pt",format:"letter"});
