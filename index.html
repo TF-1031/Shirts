@@ -67,11 +67,41 @@
   .filename{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.3;word-break:break-word;min-height:32px}
   .addrow{padding:0 14px 14px;display:grid;grid-template-columns:1fr;gap:9px}
   .chosenSize{display:flex;align-items:center;padding:10px 11px;border:1px solid #cfd6df;border-radius:10px;background:#fff;font-weight:800;color:var(--blue2)}
-  .qtyLine{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center}
-  .qtyLabel{font-weight:800;color:var(--blue2);white-space:nowrap}
-  .qtyStepper{display:grid;grid-template-columns:52px minmax(46px,1fr) 52px;align-items:center;border:1px solid #cfd6df;border-radius:10px;overflow:hidden;background:#fff;min-width:0}
-  .qtyStepper button{grid-column:auto!important;border-radius:0;padding:11px 0;background:#eef3f9;color:var(--blue2);font-size:24px;line-height:1;min-width:0}
-  .qtyStepper input{width:100%;min-width:0;border:0;border-left:1px solid #dfe4ea;border-right:1px solid #dfe4ea;border-radius:0;text-align:center;padding:11px 2px;background:#fff;font-size:18px}
+  .qtyLine{display:block}
+  .qtyLabel{font-weight:800;color:var(--blue2);margin-bottom:6px}
+  .qtyStepper{
+    display:flex;
+    width:100%;
+    align-items:stretch;
+    border:1px solid #cfd6df;
+    border-radius:10px;
+    overflow:hidden;
+    background:#fff;
+  }
+  .qtyStepper button{
+    flex:0 0 58px;
+    border-radius:0!important;
+    padding:10px 0;
+    background:#eef3f9;
+    color:var(--blue2);
+    font-size:26px;
+    line-height:1;
+    min-height:50px;
+  }
+  .qtyStepper input{
+    flex:1 1 auto;
+    width:0;
+    min-width:0;
+    border:0;
+    border-left:1px solid #dfe4ea;
+    border-right:1px solid #dfe4ea;
+    border-radius:0;
+    text-align:center;
+    padding:10px 2px;
+    background:#fff;
+    font-size:20px;
+    min-height:50px;
+  }
   .addrow>button{grid-column:1;width:100%}
   .inCart{padding:0 14px 13px;font-size:12px;color:var(--good);font-weight:700;min-height:28px}
   .drawer{position:fixed;right:0;top:0;bottom:0;width:min(520px,100vw);background:white;z-index:30;box-shadow:-10px 0 40px rgba(0,0,0,.18);transform:translateX(102%);transition:.24s ease;display:flex;flex-direction:column}
@@ -103,8 +133,6 @@
     main{padding:0 12px;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
     .thumb{height:210px;padding:14px}
     .artPreview img{max-width:94%;max-height:94%}
-    .qtyLine{grid-template-columns:1fr;gap:6px}
-    .qtyStepper{width:100%}
 
     .meta{padding:9px 10px 6px}
     .filename{font-size:10px;min-height:28px}
@@ -232,10 +260,10 @@ function renderCards(){
       </div>
       <div class="addrow">
         <div class="qtyLine">
-          <div class="qtyLabel">Quantity</div>
+          <div class="qtyLabel">Quantity <span style="font-weight:400;color:var(--muted);font-size:12px">(minimum 1)</span></div>
           <div class="qtyStepper">
             <button type="button" onclick="stepQty(${d.num},-1)" aria-label="Decrease quantity">−</button>
-            <input id="qty-${d.num}" type="number" min="1" value="1" inputmode="numeric" aria-label="Quantity">
+            <input id="qty-${d.num}" type="number" min="1" value="1" inputmode="numeric" aria-label="Quantity" readonly>
             <button type="button" onclick="stepQty(${d.num},1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
