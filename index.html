@@ -251,7 +251,7 @@
     </div>
     <div class="userfield">
       <label for="customerName"><strong>Your name:</strong></label>
-      <input id="customerName" type="text" placeholder="First and last name">
+      <input id="customerName" type="text" placeholder="First and last name" required aria-required="true">
     </div>
     <button class="primary cartBtn" onclick="openCart()">View Order <span class="badge" id="cartCount">0</span></button>
   </div>
@@ -329,10 +329,10 @@ function stepQty(num,delta){
 
 function addItem(num){
   const qtyEl = $(`qty-${num}`);
-  const qty = Math.max(0, parseInt(qtyEl.textContent || "0",10));
-  if(qty === 0) return;
+  const selectedQty = Math.max(0, parseInt(qtyEl.textContent || "0",10));
+  const qtyToAdd = selectedQty === 0 ? 1 : selectedQty;
 
-  for(let i=0;i<qty;i++){
+  for(let i=0;i<qtyToAdd;i++){
     cart.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2),
       num,
@@ -398,9 +398,10 @@ function renderCards(){
             <button type="button" onclick="stepQty(${d.num},1)" aria-label="Increase quantity">+</button>
           </div>
         </div>
+        <div style="font-size:11px;color:var(--muted);margin-top:-2px">Tap Add to Order for 1, or choose a quantity first.</div>
         <button class="primary" onclick="addItem(${d.num})">Add to Order</button>
       </div>
-      <div class="inCart">${inc ? `${inc} print${inc===1?"":"s"} currently in order` : ""}</div>
+      <div class="inCart">${inc ? `In order: ${inc}` : ""}</div>
     </article>`;
   }).join("");
 }
@@ -482,10 +483,22 @@ function orderText(){
   return lines.join("\n");
 }
 
+function requireCustomerName(){
+  const input = $("customerName");
+  const name = input.value.trim();
+
+  if(name) return name;
+
+  alert("Please enter your name before submitting the order.");
+  input.focus();
+  input.scrollIntoView({behavior:"smooth", block:"center"});
+  return null;
+}
+
 function emailOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=$("customerName").value.trim();
-  if(!name && !confirm("No name is entered. Continue anyway?")) return;
+  const name=requireCustomerName();
+  if(!name) return;
   const body = encodeURIComponent(orderText());
   const subject = encodeURIComponent("Columbia Prints");
   location.href = `mailto:toddefarrell@gmail.com?subject=${subject}&body=${body}`;
@@ -493,8 +506,8 @@ function emailOrder(){
 
 function textOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=$("customerName").value.trim();
-  if(!name && !confirm("No name is entered. Continue anyway?")) return;
+  const name=requireCustomerName();
+  if(!name) return;
 
   const body = encodeURIComponent(orderText());
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -504,7 +517,8 @@ function textOrder(){
 
 function printOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
-  const name=$("customerName").value.trim() || "(name not entered)";
+  const name=requireCustomerName();
+  if(!name) return;
   const rows=grouped();
   const w=window.open("","_blank");
   const body=rows.map(r=>`
@@ -540,8 +554,9 @@ async function svgToPng(src, size=240){
 
 async function downloadPDF(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
+  const name=requireCustomerName();
+  if(!name) return;
   if(!window.jspdf){alert("PDF library could not load. Use “Print / Save PDF” instead.");return;}
-  const name=$("customerName").value.trim() || "(name not entered)";
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({unit:"pt",format:"letter"});
   let y=54;
