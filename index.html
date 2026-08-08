@@ -321,26 +321,31 @@ $("customerName").value = localStorage.getItem("columbiaPrintName") || "";
 $("customerName").addEventListener("input",()=>localStorage.setItem("columbiaPrintName",$("customerName").value));
 
 function stepQty(num,delta){
-  const el = $(`qty-${num}`);
-  const current = Math.max(0, parseInt(el.textContent || "0",10));
-  el.textContent = Math.max(0, current + delta);
-}
-
-
-function addItem(num){
-  const qtyEl = $(`qty-${num}`);
-  const selectedQty = Math.max(0, parseInt(qtyEl.textContent || "0",10));
-  const qtyToAdd = selectedQty === 0 ? 1 : selectedQty;
-
-  for(let i=0;i<qtyToAdd;i++){
+  if(delta > 0){
     cart.push({
       id: Date.now().toString(36) + Math.random().toString(36).slice(2),
       num,
       size:"M"
     });
+    save();
+    return;
   }
 
-  qtyEl.textContent = "0";
+  if(delta < 0){
+    const idx = cart.map(x=>x.num).lastIndexOf(num);
+    if(idx !== -1){
+      cart.splice(idx,1);
+      save();
+    }
+  }
+}
+
+function addItem(num){
+  cart.push({
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+    num,
+    size:"M"
+  });
   save();
 }
 
@@ -393,15 +398,14 @@ function renderCards(){
         <div class="qtyLine">
           <div class="qtyLabel">Quantity</div>
           <div class="qtyStepper">
-            <button type="button" onclick="stepQty(${d.num},-1)" aria-label="Decrease quantity">−</button>
-            <span class="qtyValue" id="qty-${d.num}" aria-label="Quantity">0</span>
-            <button type="button" onclick="stepQty(${d.num},1)" aria-label="Increase quantity">+</button>
+            <button type="button" onclick="stepQty(${d.num},-1)" aria-label="Remove one from order">−</button>
+            <span class="qtyValue" id="qty-${d.num}" aria-label="Quantity">${inc}</span>
+            <button type="button" onclick="stepQty(${d.num},1)" aria-label="Add one to order">+</button>
           </div>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:-2px">Tap Add to Order for 1, or choose a quantity first.</div>
         <button class="primary" onclick="addItem(${d.num})">Add to Order</button>
       </div>
-      <div class="inCart">${inc ? `In order: ${inc}` : ""}</div>
+      <div class="inCart">${inc ? `In order` : ""}</div>
     </article>`;
   }).join("");
 }
