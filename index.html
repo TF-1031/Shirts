@@ -391,19 +391,46 @@ function renderCart(){
 function openCart(){renderCart();$("drawer").classList.add("open");$("shade").classList.add("open");}
 function closeCart(){$("drawer").classList.remove("open");$("shade").classList.remove("open");}
 
+
+function cleanOrderName(filename){
+  // Remove the file extension.
+  const lastDot = filename.lastIndexOf(".");
+  const ext = lastDot >= 0 ? filename.slice(lastDot + 1).toLowerCase() : "";
+  let base = lastDot >= 0 ? filename.slice(0, lastDot) : filename;
+
+  // If the filename includes its own file-type marker before the number
+  // (for example "svg-03.svg", "png-03.png", or "jpg-03.jpg"),
+  // remove that redundant marker and turn the number into "#03".
+  if(ext){
+    const typeMarker = new RegExp("\\\\s+" + ext.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&") + "-(\\\\d+)$", "i");
+    base = base.replace(typeMarker, " #$1");
+  }
+
+  // Fallback for the current Columbia naming convention.
+  base = base.replace(/\s+(?:svg|png|jpe?g|webp)-(\d+)$/i, " #$1");
+
+  return base.trim();
+}
+
+function orderDate(){
+  const d = new Date();
+  return `${d.getMonth()+1}/${d.getDate()}/${String(d.getFullYear()).slice(-2)}`;
+}
+
 function orderText(){
   const name = $("customerName").value.trim() || "(name not entered)";
   const lines = [
-    `Columbia Prints Order`,
+    "Columbia University Order",
     `Name: ${name}`,
-    `Total prints: ${cartTotal()}`,
-    `PRINTS ONLY — shirts are not included.`,
+    `DTF Designs (${orderDate()})`,
     ""
   ];
-  getRows().forEach((r,i)=>{
-    lines.push(`Print ${i+1}: #${String(r.num).padStart(2,"0")} — ${r.filename}`);
-    lines.push(`  Intended shirt size: ${r.size}`);
+
+  grouped().forEach(g=>{
+    const designName = cleanOrderName(g.filename);
+    lines.push(`${designName}-${g.size.toLowerCase()}-${g.qty}`);
   });
+
   return lines.join("\n");
 }
 
@@ -430,19 +457,19 @@ function textOrder(){
 function printOrder(){
   if(!cartTotal()){alert("Add at least one print first.");return;}
   const name=$("customerName").value.trim() || "(name not entered)";
-  const rows=getRows();
+  const rows=grouped();
   const w=window.open("","_blank");
-  const body=rows.map((r,i)=>`
+  const body=rows.map(r=>`
     <tr>
       <td style="width:70px"><img src="${r.src}" style="width:62px;height:62px;object-fit:contain"></td>
-      <td><strong>Print ${i+1} — #${String(r.num).padStart(2,"0")}</strong><br><span style="font-size:11px">${escapeHtml(r.filename)}</span></td>
-      <td><strong>${r.size}</strong></td>
+      <td><strong>${escapeHtml(cleanOrderName(r.filename))}-${r.size.toLowerCase()}-${r.qty}</strong></td>
     </tr>`).join("");
-  w.document.write(`<!doctype html><html><head><title>Columbia Prints - ${escapeHtml(name)}</title>
-  <style>body{font-family:Arial,sans-serif;margin:32px;color:#111}h1{margin-bottom:4px}p{margin-top:0}.note{padding:10px 12px;background:#eee;border-radius:8px;margin:12px 0 18px}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ddd;padding:8px;text-align:left}th{background:#f1f3f5}@media print{button{display:none}}</style></head>
-  <body><h1>Columbia Prints Order</h1><p><strong>Name:</strong> ${escapeHtml(name)} &nbsp; <strong>Total prints:</strong> ${cartTotal()}</p>
-  <div class="note"><strong>PRINTS ONLY:</strong> These are DTF transfers. Shirts are not included and will be chosen separately.</div>
-  <table><thead><tr><th></th><th>Design</th><th>Intended Shirt Size</th></tr></thead><tbody>${body}</tbody></table>
+  w.document.write(`<!doctype html><html><head><title>Columbia University Order - ${escapeHtml(name)}</title>
+  <style>body{font-family:Arial,sans-serif;margin:32px;color:#111}h1{margin-bottom:4px}p{margin:3px 0}table{width:100%;border-collapse:collapse;margin-top:18px}th,td{border-bottom:1px solid #ddd;padding:8px;text-align:left}th{background:#f1f3f5}@media print{button{display:none}}</style></head>
+  <body><h1>Columbia University Order</h1>
+  <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+  <p><strong>DTF Designs (${orderDate()})</strong></p>
+  <table><tbody>${body}</tbody></table>
   <script>window.onload=()=>setTimeout(()=>window.print(),350)<\/script></body></html>`);
   w.document.close();
 }
@@ -470,37 +497,37 @@ async function downloadPDF(){
   const {jsPDF}=window.jspdf;
   const pdf=new jsPDF({unit:"pt",format:"letter"});
   let y=54;
-  pdf.setFont("helvetica","bold"); pdf.setFontSize(20); pdf.text("Columbia Prints Order",42,y);
-  y+=22; pdf.setFont("helvetica","normal"); pdf.setFontSize(11);
-  pdf.text(`Name: ${name}`,42,y); y+=16;
-  pdf.text(`Total prints: ${cartTotal()}`,42,y); y+=18;
-  pdf.setFont("helvetica","bold"); pdf.text("PRINTS ONLY — shirts are not included.",42,y); y+=24;
 
-  const header=()=>{
-    pdf.setFont("helvetica","bold");pdf.setFontSize(9);
-    pdf.text("Design",120,y); pdf.text("Intended Shirt Size",430,y);
-    y+=9; pdf.line(42,y,570,y); y+=10;
-  };
-  header();
-  const rows=getRows();
-  for(let i=0;i<rows.length;i++){
-    const r=rows[i];
-    if(y>700){pdf.addPage();y=54;header();}
+  pdf.setFont("helvetica","bold");
+  pdf.setFontSize(20);
+  pdf.text("Columbia University Order",42,y);
+
+  y+=22;
+  pdf.setFont("helvetica","normal");
+  pdf.setFontSize(11);
+  pdf.text(`Name: ${name}`,42,y);
+
+  y+=16;
+  pdf.setFont("helvetica","bold");
+  pdf.text(`DTF Designs (${orderDate()})`,42,y);
+  y+=24;
+
+  for(const r of grouped()){
+    if(y>700){pdf.addPage();y=54;}
     try{
       const png=await svgToPng(r.src,180);
-      pdf.addImage(png,"PNG",42,y-3,62,62);
+      pdf.addImage(png,"PNG",42,y-3,56,56);
     }catch(e){}
-    pdf.setFont("helvetica","bold");pdf.setFontSize(10);pdf.text(`Print ${i+1} — #${String(r.num).padStart(2,"0")}`,120,y+14);
-    pdf.setFont("helvetica","normal");pdf.setFontSize(7.5);
-    const fn=pdf.splitTextToSize(r.filename,245);
-    pdf.text(fn.slice(0,2),120,y+28);
-    pdf.setFont("helvetica","bold");pdf.setFontSize(11);pdf.text(r.size,470,y+20);
-    y+=72; pdf.line(42,y-5,570,y-5);
+    pdf.setFont("helvetica","bold");
+    pdf.setFontSize(11);
+    pdf.text(`${cleanOrderName(r.filename)}-${r.size.toLowerCase()}-${r.qty}`,112,y+24);
+    y+=66;
+    pdf.line(42,y-5,570,y-5);
   }
-  const safe=name.replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"") || "Order";
-  pdf.save(`Columbia_Prints_${safe}.pdf`);
-}
 
+  const safe=name.replace(/[^a-z0-9]+/gi,"_").replace(/^_+|_+$/g,"") || "Order";
+  pdf.save(`Columbia_University_Order_${safe}.pdf`);
+}
 
 function updateCountdown(){
   const cfg = window.COLUMBIA_PRINTS_CONFIG || {};
