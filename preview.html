@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Columbia Prints — Shirt Preview</title>
+<style>
+:root {
+  --blue:#1f5a9d;
+  --ink:#17202b;
+  --muted:#6d7784;
+  --line:#d8dee6;
+  --bg:#f4f6f9;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+.top{max-width:1200px;margin:auto;padding:14px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+h1{font-size:22px;margin:0;flex:1}
+a{color:var(--blue);text-decoration:none;font-weight:700}
+.controls{max-width:1200px;margin:16px auto 10px;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}
+label{display:block;font-weight:800;font-size:13px;margin-bottom:6px}
+select,button{font:inherit}
+select{width:100%;padding:11px;border:1px solid #cbd3dd;border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:11px 14px;font-weight:800;cursor:pointer}
+.primary{background:var(--blue);color:white}
+.stageWrap{max-width:1200px;margin:0 auto 28px;padding:0 16px}
+.stage{position:relative;width:100%;background:#ddd;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.stage>img{display:block;width:100%;height:auto}
+.print{position:absolute;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;pointer-events:none}
+.print img{max-width:100%;max-height:100%;object-fit:contain;filter:drop-shadow(0 1px 1px rgba(0,0,0,.12))}
+/* Shirt-front placement for the generated six-person lineup. */
+.p1{left:13.3%;top:35.8%;width:9.2%;height:15.2%}
+.p2{left:29.2%;top:35.7%;width:8.8%;height:13.4%}
+.p3{left:45.0%;top:34.6%;width:8.5%;height:12.9%}
+.p4{left:60.4%;top:35.7%;width:8.6%;height:14.7%}
+.p5{left:73.5%;top:35.3%;width:8.7%;height:14.8%}
+.p6{left:88.2%;top:35.7%;width:8.3%;height:14.5%}
+.note{max-width:1200px;margin:0 auto 16px;padding:0 16px;color:var(--muted);font-size:13px;line-height:1.45}
+.legend{max-width:1200px;margin:0 auto 10px;padding:0 16px;display:flex;gap:8px;flex-wrap:wrap}
+.chip{background:#fff;border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:12px}
+@media(max-width:650px){
+  .controls{grid-template-columns:1fr}
+  h1{font-size:20px}
+  .stageWrap{padding:0 8px}
+  .note,.legend{padding:0 10px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="top">
+    <h1>Shirt Design Preview</h1>
+    <a href="index.html">← Back to Order Page</a>
+  </div>
+</header>
+
+<div class="controls">
+  <div>
+    <label for="designSelect">Choose a DTF design</label>
+    <select id="designSelect"></select>
+  </div>
+  <button class="primary" id="nextBtn" type="button">Next Design</button>
+</div>
+
+<div class="legend">
+  <span class="chip">Navy</span>
+  <span class="chip">Light Blue</span>
+  <span class="chip">Light Blue</span>
+  <span class="chip">Black</span>
+  <span class="chip">Gray</span>
+  <span class="chip">White</span>
+</div>
+
+<div class="stageWrap">
+  <div class="stage" id="stage">
+    <img src="Assets/family-shirt-preview.png" alt="Six people wearing blank garments for preview: a navy tee, a light-blue crewneck sweatshirt, a light-blue hoodie, a black tee, a gray tee, and a white tee">
+    <div class="print p1"><img alt=""></div>
+    <div class="print p2"><img alt=""></div>
+    <div class="print p3"><img alt=""></div>
+    <div class="print p4"><img alt=""></div>
+    <div class="print p5"><img alt=""></div>
+    <div class="print p6"><img alt=""></div>
+  </div>
+</div>
+
+<div class="note">
+  This preview is for visual comparison only. It places the selected transfer on all six garments at once so you can compare how it looks on tees, a crewneck sweatshirt, and a hoodie before ordering.
+</div>
+
+<script>
+const designs = ["Columbia Univesity svg-01.svg", "Columbia Univesity svg-02.svg", "Columbia Univesity svg-03.svg", "Columbia Univesity svg-04.svg", "Columbia Univesity svg-05.svg", "Columbia Univesity svg-06.svg", "Columbia Univesity svg-07.svg", "Columbia Univesity svg-08.svg", "Columbia Univesity svg-09.svg", "Columbia Univesity svg-10.svg", "Columbia Univesity svg-11.svg", "Columbia Univesity svg-12.svg", "Columbia Univesity svg-13.svg", "Columbia Univesity svg-14.svg", "Columbia Univesity svg-15.svg", "Columbia Univesity svg-16.svg", "Columbia Univesity svg-17.svg", "Columbia Univesity svg-18.svg", "Columbia Univesity svg-19.svg", "Columbia Univesity svg-20.svg", "Columbia Univesity svg-21.svg", "Columbia Univesity svg-22.svg", "Columbia Univesity svg-23.svg", "Columbia Univesity svg-24.svg", "Columbia Univesity svg-25.svg", "Columbia Univesity svg-26.svg", "Columbia Univesity svg-27.svg", "Columbia Univesity svg-28.svg", "Columbia Univesity svg-29.svg", "Columbia Univesity svg-30.svg", "Columbia Univesity svg-31.svg", "Columbia Univesity svg-32.svg", "Columbia Univesity svg-33.svg", "Columbia Univesity svg-34.svg", "Columbia Univesity svg-35.svg", "Columbia Univesity svg-36.svg", "Columbia Univesity svg-37.svg", "Columbia Univesity svg-38.svg", "Columbia Univesity svg-39.svg", "Columbia Univesity svg-40.svg", "Columbia Univesity svg-41.svg", "Columbia Univesity svg-42.svg", "Columbia Univesity svg-43.svg", "Columbia Univesity svg-44.svg", "Columbia Univesity svg-45.svg", "Columbia Univesity svg-46.svg", "Columbia Univesity svg-47.svg", "Columbia Univesity svg-48.svg", "Columbia Univesity svg-49.svg", "Columbia Univesity svg-50.svg", "Columbia Univesity svg-51.svg", "Columbia Univesity svg-52.svg", "Columbia Univesity svg-53.svg", "Columbia Univesity svg-54.svg", "Columbia Univesity svg-55.svg", "Columbia Univesity svg-56.svg", "Columbia Univesity svg-57.svg", "Columbia Univesity svg-58.svg", "Columbia Univesity svg-59.svg", "Columbia Univesity svg-60.svg", "Columbia Univesity svg-61.svg", "Columbia Univesity svg-62.svg", "Columbia Univesity svg-63.svg", "Columbia Univesity svg-64.svg", "Columbia Univesity svg-65.svg", "Columbia Univesity svg-66.svg", "Columbia Univesity svg-67.svg", "Columbia Univesity svg-68.svg", "Columbia Univesity svg-69.svg", "Columbia Univesity svg-70.svg", "Columbia Univesity svg-72.svg", "Columbia Univesity svg-73.svg", "Columbia Univesity svg-74.svg", "Columbia Univesity svg-75.svg", "Columbia Univesity svg-76.svg", "Columbia Univesity svg-77.svg", "Columbia Univesity svg-78.svg", "Columbia Univesity svg-79.svg", "Columbia Univesity svg-80.svg"];
+const select = document.getElementById("designSelect");
+const nextBtn = document.getElementById("nextBtn");
+const previewImgs = [...document.querySelectorAll(".print img")];
+
+function labelFor(filename) {
+  const match = filename.match(/(\d+)(?=\.svg$)/i);
+  return match ? `#${String(parseInt(match[1],10)).padStart(2,"0")}` : filename.replace(/\.svg$/i,"");
+}
+
+designs.forEach((filename,i)=>{
+  const opt = document.createElement("option");
+  opt.value = filename;
+  opt.textContent = `${labelFor(filename)} — ${filename.replace(/\.svg$/i,"")}`;
+  select.appendChild(opt);
+});
+
+function renderPreview(){
+  const file = select.value;
+  previewImgs.forEach(img => {
+    img.src = `Assets/${encodeURIComponent(file).replace(/%2F/g,"/")}`;
+  });
+}
+
+select.addEventListener("change", renderPreview);
+nextBtn.addEventListener("click",()=>{
+  if(!designs.length) return;
+  select.selectedIndex = (select.selectedIndex + 1) % designs.length;
+  renderPreview();
+});
+
+if(designs.length){
+  select.selectedIndex = 0;
+  renderPreview();
+}
+</script>
+</body>
+</html>
